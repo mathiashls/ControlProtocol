@@ -10,15 +10,15 @@ the equivalent keys.
 The protocol itself use the dictionary to send signals from the keyboard to
 the HDbitT device. The standard keys are:
 
-h -> volume down
-l -> volume up
-j -> channel down
-k -> channel up
-0 -> number 0
-1 -> number 1
-2 -> number 2
++ h -> volume down
++ l -> volume up
++ j -> channel down
++ k -> channel up
++ 0 -> number 0
++ 1 -> number 1
++ 2 -> number 2
     {...}
-9 -> number 9
++ 9 -> number 9
 
 The current remote control available are:
 
