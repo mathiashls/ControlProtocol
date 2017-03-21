@@ -1,6 +1,6 @@
-from control_models import cr2fp
 from binascii import unhexlify
-
+from time import sleep
+from control_models import cr2fp
 from twisted.internet.protocol import DatagramProtocol
 
 
@@ -8,7 +8,7 @@ class ControlProtocol(DatagramProtocol):
 
     def __init__(self, model):
         if model == 'cr2fp':
-            self.control = cr2fp.cr2fp
+            self.control = cr2fp.CR2FP()
         else:
             raise
         self.host = "192.168.1.238"
@@ -30,7 +30,7 @@ class ControlProtocol(DatagramProtocol):
     def input_validation(self, keyboard_input):
         list_of_buttons = []
         for letter in keyboard_input:
-            if letter in self.control:
+            if letter in self.control.buttons:
                 list_of_buttons.append(letter)
             else:
                 return None
@@ -45,7 +45,8 @@ class ControlProtocol(DatagramProtocol):
                 print("Wrong input parameters: try again.")
             else:
                 while list_of_cmd:
-                    self._send(self.control[list_of_cmd.pop(0)])
+                    sleep(self.control.message_delay)
+                    self._send(self.control.buttons[list_of_cmd.pop(0)])
 
     # '_send' method receive the command string, convert it to binary and
     # send it to the IR device via UDP connection
