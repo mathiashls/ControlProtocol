@@ -1,0 +1,9 @@
+class control_model():
+    INTERVAL = interval_time
+    buttons = {
+        'channel_down': 'hex code'
+        'channel_up': 'hex code'
+        'volume_down': 'hex code'
+        'volume_up': 'hex code'
+        'number': 'hex code'
+    }
