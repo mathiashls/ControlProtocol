@@ -19,6 +19,10 @@ class ControlProtocol(DatagramProtocol):
             self.control = skyhdtv.SKYHDTV()
         else:
             raise
+        """
+            The HDbitT device works with a default IP (192.168.1.238)
+            The default port for the IR stream is 7001
+        """
         self.host = host
         self.port = port
 
@@ -29,7 +33,6 @@ class ControlProtocol(DatagramProtocol):
         """
         self.transport.connect(self.host, self.port)
         logging.info("Connect with %s:%d" % (self.host, self.port))
-        self.protocol_loop()
 
     def datagramReceived(self, data, addr):
         """Default reactor method (useless for the protocol itself)"""
@@ -39,44 +42,17 @@ class ControlProtocol(DatagramProtocol):
         """Default reactor method (useless for the protocol itself)"""
         logging.error("Connection refused: no one listening.")
 
-    def input_validation(self, keyboard_input):
+    def _channel_is_valid(self, user_input):
         """
-            input_validation method returns a list of validated parsed
-            characters if all the characters are valid, or None if the
-            characters are not valid. This way the user can insert a string of
-            buttons and the program will work just fine.
+            Return True if all the characters inside user_input are valid, and
+            False if not.
         """
-        list_of_buttons = []
-        if keyboard_input in self.control.buttons:
-            list_of_buttons.append(keyboard_input)
-        else:
-            for letter in keyboard_input:
-                if letter in self.control.buttons:
-                    list_of_buttons.append(letter)
-                else:
-                    return None
-        return list_of_buttons
-
-    def protocol_loop(self):
-        """
-            protocol_loop must be overwritten by the application. It must
-            capture the input from the user and send it to the
-            protocol_dispatcher
-        """
-        raise
-
-    def protocol_dispatcher(self, keyboard_input):
-        """
-            Main program loop, used to read the input from the user and make
-            the general method calls.
-        """
-        list_of_cmd = self.input_validation(keyboard_input)
-        if list_of_cmd is None:
-            logging.warn("Wrong input parameters: try again.")
-        else:
-            while list_of_cmd:
-                sleep(self.control.INTERVAL)
-                self._send(self.control.buttons[list_of_cmd.pop(0)])
+        try:
+            int(user_input)
+            return True
+        except Exception as error:
+            logging.error(error)
+        return False
 
     def _send(self, command):
         """
@@ -85,5 +61,27 @@ class ControlProtocol(DatagramProtocol):
         """
         try:
             self.transport.write(unhexlify(command))
+            logging.info("Signal successfully sent.")
         except Exception as error:
             logging.error(error)
+
+    def volume_up(self):
+        self._send(self.control.buttons['volume_up'])
+
+    def volume_down(self):
+        self._send(self.control.buttons['volume_down'])
+
+    def channel_up(self):
+        self._send(self.control.buttons['channel_up'])
+
+    def channel_down(self):
+        self._send(self.control.buttons['channel_down'])
+
+    def set_channel(self, channel):
+        if self._channel_is_valid(channel):
+            for letter in str(channel):
+                self._send(self.control.buttons[letter])
+                sleep(self.control.INTERVAL)
+                logging.info("Sending %s signal..." % letter)
+        else:
+            logging.info("Wrong input parameters: try again.")
